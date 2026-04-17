@@ -1,0 +1,39 @@
+# Go binaries and build artifacts
+/bin/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+/ongc/ongc.test
+
+# Go coverage
+coverage.out
+coverage.html
+
+# Go module download cache (never commit)
+/vendor/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+pip-selfcheck.json
+venv/
+.venv/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
