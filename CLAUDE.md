@@ -11,35 +11,40 @@ Output-compatible with PyOngc v1.2.0 against OpenNGC v20260307. **Zero external 
 - `rtk go vet ./...` — static analysis
 - `rtk go install ./cmd/ongc` — install CLI
 - `rtk go mod tidy` — tidy module
+- `make gen` — regenerate `ongc/catalog_generated.go` from `ongc/data/*.csv`
+- `make gen-check` — CI gate: fails if generated file is out of sync
 - Targeted tests: `rtk go test ./ongc/... -run TestGet -v`
 - Module: `github.com/xen0l/go-openngc`, Go 1.26
-- Data setup (one-time): download `NGC.csv` + `addendum.csv` from the [OpenNGC repo](https://github.com/mattiaverga/OpenNGC) into `ongc/data/`
-- Generate test fixtures: `pip install pyongc && python scripts/generate_testdata.py`
+- Data setup (one-time): download `NGC.csv` + `addendum.csv` from the [OpenNGC repo](https://github.com/mattiaverga/OpenNGC) into `ongc/data/`, then `make gen`
+- Generate test fixtures: `pip install pyongc==1.2.0 && python scripts/generate_testdata.py` (see catalog-update gotcha below for the rebuild flow when upstream OpenNGC ≠ PyOngc's bundled version)
 
 ## Source Layout
 
 > Use `Glob`/`Grep`/`ls` to discover files.
 
 ```
-ongc/types.go    ongc/ongc.go     ongc/lookup.go   ongc/filter.go
-ongc/spatial.go  ongc/format.go   ongc/doc.go      ongc/*_test.go
-ongc/data/       cmd/ongc/        testdata/golden/ testdata/objects.json
-scripts/generate_testdata.py
+ongc/types.go    ongc/ongc.go                ongc/lookup.go   ongc/filter.go
+ongc/spatial.go  ongc/format.go              ongc/doc.go      ongc/*_test.go
+ongc/data/       ongc/catalog_generated.go   cmd/ongc/        testdata/golden/
+internal/gen/    scripts/generate_testdata.py
 ```
 
 ## Architecture
 
-`init() → parse NGC.csv + addendum.csv → []Object → byName + aliases indexes`
+`go generate (internal/gen) → ongc/catalog_generated.go → init() builds byName + aliases indexes`
 
 | File | Responsibility |
 |------|---------------|
-| `ongc/types.go` | ObjectType enum (21 codes), type code maps, error types |
-| `ongc/ongc.go` | Object struct, CSV parsing, `init()`, `go:embed`, index building |
+| `ongc/types.go` | ObjectType enum (21 codes), `TypeName`/`TypeCodes`/`IsKnownType` accessors, error types |
+| `ongc/ongc.go` | `Object` struct, `init()` building indexes, `//go:generate` directive |
+| `ongc/catalog_generated.go` | Generated: compiled-in `[]Object` slice + `generatedDatabaseVersion` const |
+| `internal/gen/main.go` | Generator: reads `ongc/data/*.csv`, emits `catalog_generated.go` |
 | `ongc/lookup.go` | `Get`, `Messier`, `GetMany`, `Search` |
 | `ongc/filter.go` | `List` with functional options pattern |
-| `ongc/spatial.go` | `Neighbors`, `Separation`, `InRegion`, `Nearby` — brute-force spherical at 14K objects |
-| `ongc/format.go` | `String()`, `PrintDetails()` 79-col box, coord formatters |
+| `ongc/spatial.go` | `Neighbors`, `Separation`, `InRegion`, `Nearby`, `validateCatalog` |
+| `ongc/format.go` | `String()`, `PrintDetails()` 79-col box, coord formatters, `pyFloat` |
 | `cmd/ongc/main.go` | CLI with 6 subcommands, stdlib `flag` only — no cobra |
+| `cmd/ongc/flags.go` | `reorderFlags` helper that hoists flags past positionals |
 
 **CSV format**: `;` delimiter, 32 columns, `HH:MM:SS.ss` RA, `±DD:MM:SS.s` Dec, empty field = nil/NaN.
 **Coordinates**: stored as float64 radians internally; `RADeg()`, `DecDeg()`, `RAString()`, `DecString()` for callers.
@@ -65,13 +70,14 @@ scripts/generate_testdata.py
 
 Build files in this order; after each: `rtk go build ./...` + `rtk go vet ./...` + `rtk go test ./...`
 
-1. `ongc/types.go` — ObjectType enum, type code maps, error types
-2. `ongc/ongc.go` — Object struct, CSV parsing, `init()`, embed, indexes
-3. `ongc/lookup.go` — `Get`, `Messier`, `GetMany`, `Search`
-4. `ongc/filter.go` — `List` with functional options
-5. `ongc/spatial.go` — `Neighbors`, `Separation`, `InRegion`, `Nearby`
-6. `ongc/format.go` — `String()`, `PrintDetails()`, coord formatters
-7. `cmd/ongc/main.go` — CLI
+1. `ongc/types.go` — ObjectType enum, `TypeName`/`TypeCodes`/`IsKnownType`, error types
+2. `ongc/ongc.go` — `Object` struct, `init()` (iterates `generatedObjects`), `//go:generate` directive
+3. `internal/gen/main.go` — generator that reads `ongc/data/*.csv` and emits `ongc/catalog_generated.go`
+4. `ongc/lookup.go` — `Get`, `Messier`, `GetMany`, `Search`
+5. `ongc/filter.go` — `List` with functional options
+6. `ongc/spatial.go` — `Neighbors`, `Separation`, `InRegion`, `Nearby`, `validateCatalog`
+7. `ongc/format.go` — `String()`, `PrintDetails()`, coord formatters, `pyFloat`
+8. `cmd/ongc/main.go` + `cmd/ongc/flags.go` — CLI with stdlib `flag` + `reorderFlags` helper
 
 ## Conventions
 
@@ -82,7 +88,7 @@ Build files in this order; after each: `rtk go build ./...` + `rtk go vet ./...`
 - **Functional options**: `List()` uses `func(*listOptions)` — add filters without breaking the API
 - **Missing CSV values**: empty field → nil for pointer types, `math.NaN()` for float64; render as literal `"N/A"` in all output
 - **Name normalization**: trim → uppercase → zero-pad NGC/IC numeric to 4 digits → uppercase trailing letter. `ngc1a` → `NGC0001A`, `ic 673` → `IC0673`, `M31` → alias map → `NGC0224`
-- **go:embed**: `ongc/data/NGC.csv` and `ongc/data/addendum.csv` embedded at compile time — no runtime file access
+- **Catalog data**: compiled into `ongc/catalog_generated.go` at build time by `internal/gen` (run via `go generate ./...` or `make gen`). CSVs in `ongc/data/` are the source of truth; commit both the CSV and the regenerated Go file. Runtime init only builds `byName` and `aliases` indexes over the compiled-in slice — no CSV reader on the hot path.
 - **Byte-exact output** (required for PyOngc v1.2.0 compatibility against OpenNGC v20260307):
   - `String()`: `"{name}, {type_long} in {const}"` e.g. `"NGC0001, Galaxy in Peg"`
   - RA: `fmt.Sprintf("%02d:%02d:%05.2f", h, m, s)` → `"00:07:15.84"`
@@ -98,7 +104,7 @@ Build files in this order; after each: `rtk go build ./...` + `rtk go vet ./...`
 - **Error tests**: bad name → `ObjectNotFound`; bad coords → `InvalidCoordinates`
 - **Test-first for bugs**: write failing test, verify it fails, then fix
 - **Generate fixtures**: `pip install pyongc && python scripts/generate_testdata.py` (requires PyOngc installed)
-- **Catalog update gotcha**: updating `ongc/data/*.csv` to a newer OpenNGC version may cause `TestFullCatalogParity` failures for objects whose fields changed between versions — fix affected entries in `testdata/catalog_fields.json` individually
+- **Catalog update flow**: updating `ongc/data/*.csv` to a newer OpenNGC version requires: (1) `make gen` to regenerate `ongc/catalog_generated.go`, and (2) regenerate test fixtures against PyOngc 1.2.0 code + new data — `pip install pyongc==1.2.0`, overwrite its bundled `ongc.db` via upstream `createdb.py` pointed at the new CSVs, patch `DBDATE` in its `__init__.py`, then `python scripts/generate_testdata.py`.
 
 ### Workflow
 

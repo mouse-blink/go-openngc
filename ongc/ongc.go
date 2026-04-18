@@ -4,25 +4,21 @@
 
 package ongc
 
+//go:generate go run ../internal/gen
+
 import (
-	"embed"
-	"encoding/csv"
 	"fmt"
-	"io"
 	"math"
 	"regexp"
 	"strconv"
 	"strings"
 )
 
-//go:embed data/NGC.csv data/addendum.csv data/VERSION
-var csvData embed.FS
-
 var (
 	objects         []*Object
 	byName          map[string]*Object
 	aliases         map[string]*Object
-	DatabaseVersion string
+	DatabaseVersion = generatedDatabaseVersion
 )
 
 // Object represents a single deep-sky object from the OpenNGC catalog.
@@ -65,6 +61,12 @@ type Object struct {
 	NedNotes    string
 	OngNotes    string
 	Sources     string
+
+	// searchKeys is a pre-uppercased, pre-flattened corpus used by Search:
+	// Name + every CommonName + every Identifier, all uppercase. Built once
+	// in init so Search doesn't have to call strings.ToUpper ~50K times
+	// per invocation. Unexported because it's an implementation detail.
+	searchKeys []string
 }
 
 // TypeLongName returns the human-readable type name for display.
@@ -105,105 +107,148 @@ func NormalizeName(name string) string {
 	return fmt.Sprintf("%s%04d%s", m[1], n, suffix)
 }
 
+// init builds the lookup indexes over the compiled-in catalog and wires up
+// the pointer-valued fields (MajAx, MinAx, BMag, etc.) from pool arrays in
+// catalog_generated.go. No CSV parsing at runtime — generatedObjects and
+// the parallel pools come from catalog_generated.go, produced by
+// `go generate ./...`.
+//
+// Pointer fields live in parallel [14033]float64 pools rather than inline
+// fPtr(...) calls so race-detector builds stay within the compiler's
+// escape-analysis bitmap budget.
 func init() {
-	objects = make([]*Object, 0, 14100)
-	byName = make(map[string]*Object)
-	aliases = make(map[string]*Object)
+	assertPoolLengths()
 
-	vb, _ := csvData.ReadFile("data/VERSION")
-	DatabaseVersion = strings.TrimSpace(string(vb))
+	n := len(generatedObjects)
+	objects = make([]*Object, 0, n)
+	byName = make(map[string]*Object, n)
+	// ~3.2 aliases per object empirically (Messier + NGC/IC cross + common +
+	// identifiers); overshoot slightly to avoid map growth.
+	aliases = make(map[string]*Object, n*4)
 
-	mustLoadCSV("data/NGC.csv")
-	mustLoadCSV("data/addendum.csv")
-}
-
-func mustLoadCSV(path string) {
-	f, err := csvData.Open(path)
-	if err != nil {
-		panic(err)
-	}
-	defer func() { _ = f.Close() }()
-
-	r := csv.NewReader(f)
-	r.Comma = ';'
-	r.LazyQuotes = true
-
-	if _, err := r.Read(); err != nil {
-		panic(err)
-	}
-
-	for {
-		rec, err := r.Read()
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			panic(err)
-		}
-
-		obj := parseRecord(rec)
-		obj.ID = len(objects) + 1
+	// Single pass: wire pointer-valued fields from the parallel pools and
+	// build the indexes in the same loop. One cache sweep over the 5 MB
+	// object slice instead of two (previously wireCatalogPointers then a
+	// separate index-build loop).
+	for i := range generatedObjects {
+		obj := &generatedObjects[i]
+		wireObjectPointers(obj, i)
+		buildSearchKeys(obj)
 		objects = append(objects, obj)
 		byName[obj.Name] = obj
 		buildAliases(obj)
+		addToDecBand(obj)
 	}
 }
 
-func parseRecord(rec []string) *Object {
-	obj := &Object{}
-
-	obj.Name = NormalizeName(rec[0])
-	obj.Type = ObjectType(rec[1])
-
-	// Missing or malformed coords become NaN so spatial queries can skip them.
-	// Matches PyOngc, which stores NULL for these and returns "N/A" in display.
-	obj.RA = math.NaN()
-	obj.Dec = math.NaN()
-	if rec[2] != "" {
-		if ra, err := ParseRA(rec[2]); err == nil {
-			obj.RA = ra
-		}
+// buildSearchKeys populates obj.searchKeys with an uppercased corpus of
+// every name Search should match against — Name, CommonNames, Identifiers.
+// Done once in init to avoid per-call strings.ToUpper allocations on the
+// Search hot path (~51K identifier allocations per query otherwise).
+func buildSearchKeys(obj *Object) {
+	keys := make([]string, 0, 1+len(obj.CommonNames)+len(obj.Identifiers))
+	// obj.Name is already uppercase after NormalizeName.
+	keys = append(keys, obj.Name)
+	for _, n := range obj.CommonNames {
+		keys = append(keys, strings.ToUpper(n))
 	}
-	if rec[3] != "" {
-		if dec, err := ParseDec(rec[3]); err == nil {
-			obj.Dec = dec
-		}
+	for _, id := range obj.Identifiers {
+		keys = append(keys, strings.ToUpper(id))
 	}
+	obj.searchKeys = keys
+}
 
-	obj.Const = rec[4]
-	obj.MajAx = parseFloat64Ptr(rec[5])
-	obj.MinAx = parseFloat64Ptr(rec[6])
-	obj.Pa = parseFloat64Ptr(rec[7])
-	obj.BMag = parseFloat64Ptr(rec[8])
-	obj.VMag = parseFloat64Ptr(rec[9])
-	obj.JMag = parseFloat64Ptr(rec[10])
-	obj.HMag = parseFloat64Ptr(rec[11])
-	obj.KMag = parseFloat64Ptr(rec[12])
-	obj.SBrightn = parseFloat64Ptr(rec[13])
-	obj.Hubble = rec[14]
-	obj.Parallax = parseFloat64Ptr(rec[15])
-	obj.PmRA = parseFloat64Ptr(rec[16])
-	obj.PmDec = parseFloat64Ptr(rec[17])
-	obj.RadVel = parseFloat64Ptr(rec[18])
-	obj.Redshift = parseFloat64Ptr(rec[19])
-	obj.CstarUMag = parseFloat64Ptr(rec[20])
-	obj.CstarBMag = parseFloat64Ptr(rec[21])
-	obj.CstarVMag = parseFloat64Ptr(rec[22])
-	if m := rec[23]; m != "" {
-		if n, err := strconv.Atoi(m); err == nil {
-			obj.Messier = strconv.Itoa(n)
-		}
+// wireObjectPointers sets the pointer-valued fields of a single Object to
+// addresses in the package-level pools, one per row index. Entries with
+// NaN in their pool represent "not present" and leave the pointer nil.
+//
+// Split out of init for test targeting — see pool_guard_test.go.
+func wireObjectPointers(obj *Object, i int) {
+	if v := &poolMajAx[i]; !math.IsNaN(*v) {
+		obj.MajAx = v
 	}
-	obj.NGC = rec[24]
-	obj.IC = rec[25]
-	obj.CstarNames = rec[26]
-	obj.Identifiers = splitTrim(rec[27], ",")
-	obj.CommonNames = splitTrim(rec[28], ",")
-	obj.NedNotes = rec[29]
-	obj.OngNotes = rec[30]
-	obj.Sources = rec[31]
+	if v := &poolMinAx[i]; !math.IsNaN(*v) {
+		obj.MinAx = v
+	}
+	if v := &poolPa[i]; !math.IsNaN(*v) {
+		obj.Pa = v
+	}
+	if v := &poolBMag[i]; !math.IsNaN(*v) {
+		obj.BMag = v
+	}
+	if v := &poolVMag[i]; !math.IsNaN(*v) {
+		obj.VMag = v
+	}
+	if v := &poolJMag[i]; !math.IsNaN(*v) {
+		obj.JMag = v
+	}
+	if v := &poolHMag[i]; !math.IsNaN(*v) {
+		obj.HMag = v
+	}
+	if v := &poolKMag[i]; !math.IsNaN(*v) {
+		obj.KMag = v
+	}
+	if v := &poolSBrightn[i]; !math.IsNaN(*v) {
+		obj.SBrightn = v
+	}
+	if v := &poolParallax[i]; !math.IsNaN(*v) {
+		obj.Parallax = v
+	}
+	if v := &poolPmRA[i]; !math.IsNaN(*v) {
+		obj.PmRA = v
+	}
+	if v := &poolPmDec[i]; !math.IsNaN(*v) {
+		obj.PmDec = v
+	}
+	if v := &poolRadVel[i]; !math.IsNaN(*v) {
+		obj.RadVel = v
+	}
+	if v := &poolRedshift[i]; !math.IsNaN(*v) {
+		obj.Redshift = v
+	}
+	if v := &poolCstarUMag[i]; !math.IsNaN(*v) {
+		obj.CstarUMag = v
+	}
+	if v := &poolCstarBMag[i]; !math.IsNaN(*v) {
+		obj.CstarBMag = v
+	}
+	if v := &poolCstarVMag[i]; !math.IsNaN(*v) {
+		obj.CstarVMag = v
+	}
+}
 
-	return obj
+// assertPoolLengths panics if the generator ever emits pool arrays with a
+// length different from len(generatedObjects). wireObjectPointers indexes
+// every pool by the object's row index; a mismatch would otherwise surface
+// as an obscure out-of-range panic later. Fails fast at init with a clear
+// message naming the offending pool.
+func assertPoolLengths() {
+	n := len(generatedObjects)
+	expectPoolLen("MajAx", len(poolMajAx), n)
+	expectPoolLen("MinAx", len(poolMinAx), n)
+	expectPoolLen("Pa", len(poolPa), n)
+	expectPoolLen("BMag", len(poolBMag), n)
+	expectPoolLen("VMag", len(poolVMag), n)
+	expectPoolLen("JMag", len(poolJMag), n)
+	expectPoolLen("HMag", len(poolHMag), n)
+	expectPoolLen("KMag", len(poolKMag), n)
+	expectPoolLen("SBrightn", len(poolSBrightn), n)
+	expectPoolLen("Parallax", len(poolParallax), n)
+	expectPoolLen("PmRA", len(poolPmRA), n)
+	expectPoolLen("PmDec", len(poolPmDec), n)
+	expectPoolLen("RadVel", len(poolRadVel), n)
+	expectPoolLen("Redshift", len(poolRedshift), n)
+	expectPoolLen("CstarUMag", len(poolCstarUMag), n)
+	expectPoolLen("CstarBMag", len(poolCstarBMag), n)
+	expectPoolLen("CstarVMag", len(poolCstarVMag), n)
+}
+
+// expectPoolLen is the single-pool guard used by assertPoolLengths. Factored
+// out so it's unit-testable without mocking package globals.
+func expectPoolLen(name string, got, want int) {
+	if got != want {
+		panic(fmt.Sprintf("ongc: generated pool %q has length %d, want %d (generator bug)", name, got, want))
+	}
 }
 
 func buildAliases(obj *Object) {
@@ -229,27 +274,4 @@ func aliasInsert(key string, obj *Object) {
 	if _, exists := aliases[key]; !exists {
 		aliases[key] = obj
 	}
-}
-
-func parseFloat64Ptr(s string) *float64 {
-	if s == "" {
-		return nil
-	}
-	v, err := strconv.ParseFloat(s, 64)
-	if err != nil {
-		return nil
-	}
-	return &v
-}
-
-func splitTrim(s, sep string) []string {
-	parts := strings.Split(s, sep)
-	out := make([]string, 0, len(parts))
-	for _, p := range parts {
-		p = strings.TrimSpace(p)
-		if p != "" {
-			out = append(out, p)
-		}
-	}
-	return out
 }

@@ -10,6 +10,52 @@ import (
 	"sort"
 )
 
+// decBandCount partitions the full declination range [-π/2, +π/2] into
+// fixed 10° bands. Each object is assigned to exactly one band at init
+// time (see ongc.go's init) and spatial queries scan only the bands
+// their search radius can reach — roughly 2-3 bands out of 18 for a
+// typical 60-arcmin cone, versus a full-catalog brute-force scan.
+const decBandCount = 18
+
+// decBandWidthRad is the angular width of a single band (10°).
+const decBandWidthRad = math.Pi / 18
+
+// decBands[k] is the slice of coord-bearing objects whose Dec falls in
+// band k. Populated in init; never mutated at runtime.
+var decBands [decBandCount][]*Object
+
+// decBandIndex maps a Dec in radians to a band index in [0, decBandCount).
+// Objects at exactly +π/2 (north pole) map to the last band, not beyond.
+func decBandIndex(decRad float64) int {
+	// Shift to [0, π] then divide.
+	idx := int(math.Floor((decRad + math.Pi/2) / decBandWidthRad))
+	if idx < 0 {
+		return 0
+	}
+	if idx >= decBandCount {
+		return decBandCount - 1
+	}
+	return idx
+}
+
+// decBandRange returns the inclusive [lo, hi] range of band indices that
+// could possibly contain an object within radiusRad of decRad, clamped
+// to the valid range. Used to prune the scan set.
+func decBandRange(decRad, radiusRad float64) (int, int) {
+	lo := decBandIndex(decRad - radiusRad)
+	hi := decBandIndex(decRad + radiusRad)
+	return lo, hi
+}
+
+// addToDecBand appends obj to the appropriate band; skips NaN-coord rows.
+// Called from ongc.go's init loop once per object.
+func addToDecBand(obj *Object) {
+	if !hasCoords(obj) {
+		return
+	}
+	decBands[decBandIndex(obj.Dec)] = append(decBands[decBandIndex(obj.Dec)], obj)
+}
+
 // angularSep returns the angular separation in degrees between two points
 // expressed in radians using the Vincenty formula (numerically stable).
 func angularSep(ra1, dec1, ra2, dec2 float64) float64 {
@@ -80,39 +126,7 @@ func GetNeighbors(name string, radiusArcmin float64, catalog string) ([]*Object,
 		return nil, nil, &InvalidCoordinates{Msg: fmt.Sprintf("object %q has no coordinates", ref.Name)}
 	}
 
-	radiusDeg := radiusArcmin / 60.0
-	var neighbors []neighbor
-
-	for _, obj := range objects {
-		// Compare by ID so the identity check holds even if a caller passes in
-		// a copy of the reference object (defensive — the catalog slice stores
-		// one canonical pointer per ID today).
-		if obj.ID == ref.ID {
-			continue
-		}
-		if !hasCoords(obj) {
-			continue
-		}
-		if !matchCatalog(obj, catalog) {
-			continue
-		}
-		dist := angularSep(ref.RA, ref.Dec, obj.RA, obj.Dec)
-		if dist <= radiusDeg {
-			neighbors = append(neighbors, neighbor{obj: obj, dist: dist})
-		}
-	}
-
-	sort.Slice(neighbors, func(i, j int) bool {
-		return neighbors[i].dist < neighbors[j].dist
-	})
-
-	objs := make([]*Object, len(neighbors))
-	dists := make([]float64, len(neighbors))
-	for i, n := range neighbors {
-		objs[i] = n.obj
-		dists[i] = n.dist
-	}
-	return objs, dists, nil
+	return coneSearch(ref.RA, ref.Dec, radiusArcmin, catalog, ref.ID)
 }
 
 // GetNearby is like GetNeighbors but takes sexagesimal coordinate strings
@@ -129,20 +143,36 @@ func GetNearby(raStr, decStr string, radiusArcmin float64, catalog string) ([]*O
 	if err != nil {
 		return nil, nil, err
 	}
+	return coneSearch(ra, dec, radiusArcmin, catalog, 0)
+}
 
+// coneSearch is the shared worker for GetNeighbors and GetNearby. It
+// uses the decBands index to prune the candidate set to just the bands
+// the radius can reach — for a typical 60-arcmin query, that is 2-3
+// bands (~1-2K objects) instead of the full 14K. excludeID, when
+// non-zero, skips the reference object from the result (used by
+// GetNeighbors). Catalog must already be validated by the caller.
+func coneSearch(raRad, decRad, radiusArcmin float64, catalog string, excludeID int) ([]*Object, []float64, error) {
 	radiusDeg := radiusArcmin / 60.0
-	var neighbors []neighbor
+	radiusRad := radiusDeg * math.Pi / 180
+	loBand, hiBand := decBandRange(decRad, radiusRad)
 
-	for _, obj := range objects {
-		if !hasCoords(obj) {
-			continue
-		}
-		if !matchCatalog(obj, catalog) {
-			continue
-		}
-		dist := angularSep(ra, dec, obj.RA, obj.Dec)
-		if dist <= radiusDeg {
-			neighbors = append(neighbors, neighbor{obj: obj, dist: dist})
+	// Typical equatorial-field neighbor counts stay under 32; pre-sizing
+	// eliminates the first 3-5 slice reallocations for the common case.
+	neighbors := make([]neighbor, 0, 32)
+
+	for band := loBand; band <= hiBand; band++ {
+		for _, obj := range decBands[band] {
+			if excludeID != 0 && obj.ID == excludeID {
+				continue
+			}
+			if !matchCatalog(obj, catalog) {
+				continue
+			}
+			dist := angularSep(raRad, decRad, obj.RA, obj.Dec)
+			if dist <= radiusDeg {
+				neighbors = append(neighbors, neighbor{obj: obj, dist: dist})
+			}
 		}
 	}
 

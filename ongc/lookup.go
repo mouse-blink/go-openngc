@@ -48,6 +48,10 @@ func Messier(n int) (*Object, error) {
 // and Identifiers. Returns all matches in catalog order. Empty or
 // whitespace-only query returns an empty slice (avoids a silent full
 // catalog scan for stray input).
+//
+// Uses the pre-uppercased Object.searchKeys corpus built in init, so the
+// per-call cost is a single ToUpper on the query plus 14K × ~5 Contains
+// checks — no per-call string allocations beyond the query itself.
 func Search(query string) []*Object {
 	query = strings.TrimSpace(query)
 	if query == "" {
@@ -56,23 +60,8 @@ func Search(query string) []*Object {
 	upper := strings.ToUpper(query)
 	var results []*Object
 	for _, obj := range objects {
-		if strings.Contains(strings.ToUpper(obj.Name), upper) {
-			results = append(results, obj)
-			continue
-		}
-		matched := false
-		for _, cn := range obj.CommonNames {
-			if strings.Contains(strings.ToUpper(cn), upper) {
-				matched = true
-				break
-			}
-		}
-		if matched {
-			results = append(results, obj)
-			continue
-		}
-		for _, id := range obj.Identifiers {
-			if strings.Contains(strings.ToUpper(id), upper) {
+		for _, key := range obj.searchKeys {
+			if strings.Contains(key, upper) {
 				results = append(results, obj)
 				break
 			}
