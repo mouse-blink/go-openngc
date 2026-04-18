@@ -1,0 +1,45 @@
+version: "2"
+
+linters:
+  enable:
+    # correctness
+    - errcheck
+    - govet
+    - staticcheck
+    - unused
+    - ineffassign
+    - gocritic
+    - revive
+    - exhaustive
+    - goconst
+    # dead code
+    - unparam
+    # complexity
+    - nestif
+  settings:
+    revive:
+      enable-default-rules: true
+      rules:
+        - name: exported
+          disabled: true
+        - name: package-comments
+          disabled: true
+    goconst:
+      min-occurrences: 4
+    nestif:
+      min-complexity: 5
+  exclusions:
+    generated: lax
+    paths:
+      - data
+    rules:
+      - path: _test\.go
+        linters:
+          - nestif
+
+formatters:
+  enable:
+    - gofumpt
+  exclusions:
+    paths:
+      - data
