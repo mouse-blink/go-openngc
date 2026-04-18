@@ -2,7 +2,7 @@
 
 Go port of [PyOngc](https://github.com/mattiaverga/PyOngc) — library and CLI for querying the
 [OpenNGC](https://github.com/mattiaverga/OpenNGC) deep-sky object catalog (~14K objects).
-Output-compatible with PyOngc v1.2.1. **Zero external dependencies** (stdlib only).
+Output-compatible with PyOngc v1.2.0 against OpenNGC v20260307. **Zero external dependencies** (stdlib only).
 
 ## Quick Start
 
@@ -12,7 +12,7 @@ Output-compatible with PyOngc v1.2.1. **Zero external dependencies** (stdlib onl
 - `rtk go install ./cmd/ongc` — install CLI
 - `rtk go mod tidy` — tidy module
 - Targeted tests: `rtk go test ./ongc/... -run TestGet -v`
-- Module: `github.com/xen0l/go-openngc`, Go 1.24
+- Module: `github.com/xen0l/go-openngc`, Go 1.26
 - Data setup (one-time): download `NGC.csv` + `addendum.csv` from the [OpenNGC repo](https://github.com/mattiaverga/OpenNGC) into `ongc/data/`
 - Generate test fixtures: `pip install pyongc && python scripts/generate_testdata.py`
 
@@ -83,7 +83,7 @@ Build files in this order; after each: `rtk go build ./...` + `rtk go vet ./...`
 - **Missing CSV values**: empty field → nil for pointer types, `math.NaN()` for float64; render as literal `"N/A"` in all output
 - **Name normalization**: trim → uppercase → zero-pad NGC/IC numeric to 4 digits → uppercase trailing letter. `ngc1a` → `NGC0001A`, `ic 673` → `IC0673`, `M31` → alias map → `NGC0224`
 - **go:embed**: `ongc/data/NGC.csv` and `ongc/data/addendum.csv` embedded at compile time — no runtime file access
-- **Byte-exact output** (required for PyOngc v1.2.1 compatibility):
+- **Byte-exact output** (required for PyOngc v1.2.0 compatibility against OpenNGC v20260307):
   - `String()`: `"{name}, {type_long} in {const}"` e.g. `"NGC0001, Galaxy in Peg"`
   - RA: `fmt.Sprintf("%02d:%02d:%05.2f", h, m, s)` → `"00:07:15.84"`
   - Dec: sign always shown, 1 decimal → `"+27:42:29.1"`, `"-00:09:01.3"`

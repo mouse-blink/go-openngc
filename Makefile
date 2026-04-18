@@ -1,7 +1,10 @@
 VERSION ?= dev
 
 # Use rtk wrapper if available, otherwise run commands directly.
+# For go commands, plain `rtk go …` works.  For other binaries (golangci-lint),
+# use `rtk proxy <bin>` so rtk doesn't misinterpret subcommands as paths.
 RTK := $(shell command -v rtk 2>/dev/null && echo rtk)
+GOLANGCI := $(if $(RTK),rtk proxy golangci-lint,golangci-lint)
 
 .PHONY: build install data test lint
 
@@ -18,4 +21,4 @@ test:
 	$(RTK) go test ./...
 
 lint:
-	$(RTK) golangci-lint run ./...
+	$(GOLANGCI) run ./...

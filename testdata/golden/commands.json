@@ -1,0 +1,199 @@
+[
+  {
+    "filename": "view_ngc0001.txt",
+    "args": [
+      "view",
+      "NGC0001"
+    ]
+  },
+  {
+    "filename": "view_ngc7000.txt",
+    "args": [
+      "view",
+      "NGC7000"
+    ]
+  },
+  {
+    "filename": "view_m1.txt",
+    "args": [
+      "view",
+      "M1"
+    ]
+  },
+  {
+    "filename": "view_ngc0001_details.txt",
+    "args": [
+      "view",
+      "--details",
+      "NGC0001"
+    ]
+  },
+  {
+    "filename": "view_ngc7000_details.txt",
+    "args": [
+      "view",
+      "--details",
+      "NGC7000"
+    ]
+  },
+  {
+    "filename": "view_m1_details.txt",
+    "args": [
+      "view",
+      "--details",
+      "M1"
+    ]
+  },
+  {
+    "filename": "view_ngc7027_details.txt",
+    "args": [
+      "view",
+      "--details",
+      "NGC7027"
+    ]
+  },
+  {
+    "filename": "view_ngc0224_details.txt",
+    "args": [
+      "view",
+      "--details",
+      "NGC0224"
+    ]
+  },
+  {
+    "filename": "view_ngc6720_details.txt",
+    "args": [
+      "view",
+      "--details",
+      "NGC6720"
+    ]
+  },
+  {
+    "filename": "view_ngc5139_details.txt",
+    "args": [
+      "view",
+      "--details",
+      "NGC5139"
+    ]
+  },
+  {
+    "filename": "view_ic1396_details.txt",
+    "args": [
+      "view",
+      "--details",
+      "IC1396"
+    ]
+  },
+  {
+    "filename": "nearby_ic0673.txt",
+    "args": [
+      "nearby",
+      "11:08:44",
+      "-00:09:01.3"
+    ]
+  },
+  {
+    "filename": "nearby_ngc7000.txt",
+    "args": [
+      "nearby",
+      "--radius",
+      "30",
+      "20:59:17.14",
+      "+44:31:43.6"
+    ]
+  },
+  {
+    "filename": "neighbors_ngc521.txt",
+    "args": [
+      "neighbors",
+      "--radius",
+      "15",
+      "ngc521"
+    ]
+  },
+  {
+    "filename": "neighbors_ngc7000.txt",
+    "args": [
+      "neighbors",
+      "--radius",
+      "30",
+      "NGC7000"
+    ]
+  },
+  {
+    "filename": "neighbors_m31.txt",
+    "args": [
+      "neighbors",
+      "--radius",
+      "60",
+      "M31"
+    ]
+  },
+  {
+    "filename": "separation_double_cluster.txt",
+    "args": [
+      "separation",
+      "ngc869",
+      "ngc884"
+    ]
+  },
+  {
+    "filename": "separation_m31_m32.txt",
+    "args": [
+      "separation",
+      "NGC0224",
+      "NGC0221"
+    ]
+  },
+  {
+    "filename": "search_galaxy_boo_aql.txt",
+    "args": [
+      "search",
+      "--catalog",
+      "NGC",
+      "--constellation",
+      "Aql,Boo",
+      "--type",
+      "G",
+      "--uptovmag",
+      "10"
+    ]
+  },
+  {
+    "filename": "search_snr.txt",
+    "args": [
+      "search",
+      "--type",
+      "SNR"
+    ]
+  },
+  {
+    "filename": "search_pn_cyg.txt",
+    "args": [
+      "search",
+      "--catalog",
+      "NGC",
+      "--type",
+      "PN",
+      "--constellation",
+      "Cyg"
+    ]
+  },
+  {
+    "filename": "search_named_gcl.txt",
+    "args": [
+      "search",
+      "--withname",
+      "--type",
+      "GCl",
+      "--catalog",
+      "NGC"
+    ]
+  },
+  {
+    "filename": "stats.txt",
+    "args": [
+      "stats"
+    ]
+  }
+]

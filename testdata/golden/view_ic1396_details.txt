@@ -1,0 +1,17 @@
++-----------------------------------------------------------------------------+
+| Id: 1471      Name: IC1396            Type: Star cluster + Nebula           |
+| R.A.: 21:38:57.62      Dec.: +57:29:20.6      Constellation: Cep            |
++-----------------------------------------------------------------------------+
+| Major axis: 14.0'      Minor axis: 4.0'       Position angle: N/A           |
+| B-mag: N/A     V-mag: N/A     J-mag: N/A     H-mag: N/A     K-mag: N/A      |
+|                                                                             |
+| Parallax: 1.066mas     Radial velocity: -14km/s       Redshift: -0.000047   |
+|                                                                             |
+| Proper apparent motion in RA: -2.355mas/yr                                  |
+| Proper apparent motion in Dec: -4.495mas/yr                                 |
+|                                                                             |
++-----------------------------------------------------------------------------+
+| Other identifiers:                                                          |
+|    BD +56 2617, HD 206267, HIP 106886, LBN 451, LBN 452, MWSC 3539          |
++-----------------------------------------------------------------------------+
+

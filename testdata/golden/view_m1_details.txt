@@ -1,0 +1,24 @@
++-----------------------------------------------------------------------------+
+| Id: 7650      Name: NGC1952           Type: Supernova remnant               |
+| R.A.: 05:34:31.97      Dec.: +22:00:52.1      Constellation: Tau            |
+| Also known as:                                                              |
+|    M001                                                                     |
+| Common names:                                                               |
+|    Crab Nebula                                                              |
++-----------------------------------------------------------------------------+
+| Major axis: 8.0'       Minor axis: 4.0'       Position angle: N/A           |
+| B-mag: N/A     V-mag: 8.4     J-mag: N/A     H-mag: N/A     K-mag: N/A      |
+|                                                                             |
+| Parallax: N/A          Radial velocity: N/A           Redshift: N/A         |
+|                                                                             |
+| Proper apparent motion in RA: N/A                                           |
+| Proper apparent motion in Dec: N/A                                          |
+|                                                                             |
++-----------------------------------------------------------------------------+
+| Other identifiers:                                                          |
+|    IRAS 05315+2158, LBN 833                                                 |
++-----------------------------------------------------------------------------+
+| NED notes:                                                                  |
+|    Position is for the Crab pulsar.                                         |
++-----------------------------------------------------------------------------+
+

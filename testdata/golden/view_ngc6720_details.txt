@@ -1,0 +1,26 @@
++-----------------------------------------------------------------------------+
+| Id: 12761     Name: NGC6720           Type: Planetary Nebula                |
+| R.A.: 18:53:35.01      Dec.: +33:01:42.9      Constellation: Lyr            |
+| Also known as:                                                              |
+|    M057                                                                     |
+| Common names:                                                               |
+|    Ring Nebula                                                              |
++-----------------------------------------------------------------------------+
+| Major axis: 1.27'      Minor axis: N/A        Position angle: N/A           |
+| B-mag: 9.7     V-mag: 8.8     J-mag: 16.4    H-mag: N/A     K-mag: N/A      |
+|                                                                             |
+| Parallax: 1.2707mas    Radial velocity: -19km/s       Redshift: -0.000064   |
+|                                                                             |
+| Proper apparent motion in RA: 1.494mas/yr                                   |
+| Proper apparent motion in Dec: 2.486mas/yr                                  |
+|                                                                             |
+| Central star identifiers:                                                   |
+|    HD 175353                                                                |
+|                                                                             |
+| Central star magnitudes:                                                    |
+|    U-mag: N/A              B-mag: 15.03            V-mag: 15.29             |
++-----------------------------------------------------------------------------+
+| Other identifiers:                                                          |
+|    IRAS 18517+3257, PN G063.1+13.9                                          |
++-----------------------------------------------------------------------------+
+

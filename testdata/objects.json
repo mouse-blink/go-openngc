@@ -1,0 +1,146 @@
+[
+  {
+    "name": "NGC0001",
+    "type": "Galaxy",
+    "ra_rad": 0.03169517921621703,
+    "dec_rad": 0.48359728358363213,
+    "const": "Peg",
+    "messier": ""
+  },
+  {
+    "name": "NGC0224",
+    "type": "Galaxy",
+    "ra_rad": 0.1864847944729858,
+    "dec_rad": 0.720280898632902,
+    "const": "And",
+    "messier": "31"
+  },
+  {
+    "name": "NGC5248",
+    "type": "Galaxy",
+    "ra_rad": 3.5671635573087874,
+    "dec_rad": 0.15507541292178284,
+    "const": "Boo",
+    "messier": ""
+  },
+  {
+    "name": "NGC7000",
+    "type": "HII Ionized region",
+    "ra_rad": 5.494670276626285,
+    "dec_rad": 0.777173784111106,
+    "const": "Cyg",
+    "messier": ""
+  },
+  {
+    "name": "NGC1952",
+    "type": "Supernova remnant",
+    "ra_rad": 1.4596748494230258,
+    "dec_rad": 0.3842250233666105,
+    "const": "Tau",
+    "messier": "1"
+  },
+  {
+    "name": "NGC7027",
+    "type": "Planetary Nebula",
+    "ra_rad": 5.528441670431853,
+    "dec_rad": 0.7371664743322661,
+    "const": "Cyg",
+    "messier": ""
+  },
+  {
+    "name": "NGC6720",
+    "type": "Planetary Nebula",
+    "ra_rad": 4.946191105320285,
+    "dec_rad": 0.5764575264359904,
+    "const": "Lyr",
+    "messier": "57"
+  },
+  {
+    "name": "NGC0869",
+    "type": "Open Cluster",
+    "ra_rad": 0.6063971953129098,
+    "dec_rad": 0.9968840721847312,
+    "const": "Per",
+    "messier": ""
+  },
+  {
+    "name": "NGC0884",
+    "type": "Open Cluster",
+    "ra_rad": 0.6219262623325293,
+    "dec_rad": 0.9973528870143641,
+    "const": "Per",
+    "messier": ""
+  },
+  {
+    "name": "NGC5139",
+    "type": "Globular Cluster",
+    "ra_rad": 3.520175657742491,
+    "dec_rad": -0.8286275449009424,
+    "const": "Cen",
+    "messier": ""
+  },
+  {
+    "name": "NGC7789",
+    "type": "Open Cluster",
+    "ra_rad": 6.271845030364753,
+    "dec_rad": 0.9897461603577555,
+    "const": "Cas",
+    "messier": ""
+  },
+  {
+    "name": "IC0673",
+    "type": "Galaxy",
+    "ra_rad": 2.9209037691008484,
+    "dec_rad": -0.0017055745301433475,
+    "const": "Leo",
+    "messier": ""
+  },
+  {
+    "name": "IC1396",
+    "type": "Star cluster + Nebula",
+    "ra_rad": 5.66778366736743,
+    "dec_rad": 1.0033733033063823,
+    "const": "Cep",
+    "messier": ""
+  },
+  {
+    "name": "NGC1952",
+    "type": "Supernova remnant",
+    "ra_rad": 1.4596748494230258,
+    "dec_rad": 0.3842250233666105,
+    "const": "Tau",
+    "messier": "1"
+  },
+  {
+    "name": "NGC0224",
+    "type": "Galaxy",
+    "ra_rad": 0.1864847944729858,
+    "dec_rad": 0.720280898632902,
+    "const": "And",
+    "messier": "31"
+  },
+  {
+    "name": "NGC1976",
+    "type": "Star cluster + Nebula",
+    "ra_rad": 1.4629117079649538,
+    "dec_rad": -0.09406742891832104,
+    "const": "Ori",
+    "messier": "42"
+  },
+  {
+    "name": "Mel022",
+    "type": "Open Cluster",
+    "ra_rad": 0.9925542011987419,
+    "dec_rad": 0.4207164643300443,
+    "const": "Tau",
+    "messier": "45"
+  },
+  {
+    "name": "NGC6720",
+    "type": "Planetary Nebula",
+    "ra_rad": 4.946191105320285,
+    "dec_rad": 0.5764575264359904,
+    "const": "Lyr",
+    "messier": "57"
+  }
+]

@@ -1,0 +1,19 @@
++-----------------------------------------------------------------------------+
+| Id: 5597      Name: NGC0001           Type: Galaxy                          |
+| R.A.: 00:07:15.84      Dec.: +27:42:29.1      Constellation: Peg            |
++-----------------------------------------------------------------------------+
+| Major axis: 1.57'      Minor axis: 1.07'      Position angle: 112°          |
+| B-mag: 13.69   V-mag: 12.93   J-mag: 10.78   H-mag: 10.02   K-mag: 9.76     |
+|                                                                             |
+| Parallax: N/A          Radial velocity: 4536km/s      Redshift: 0.015245    |
+|                                                                             |
+| Proper apparent motion in RA: N/A                                           |
+| Proper apparent motion in Dec: N/A                                          |
+|                                                                             |
+| Surface brightness: 23.13     Hubble classification: Sb                     |
++-----------------------------------------------------------------------------+
+| Other identifiers:                                                          |
+|    2MASX J00071582+2742291, IRAS 00047+2725, MCG +04-01-025, PGC 000564,    |
+|    UGC 00057                                                                |
++-----------------------------------------------------------------------------+
+

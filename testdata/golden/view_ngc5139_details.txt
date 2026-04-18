@@ -1,0 +1,19 @@
++-----------------------------------------------------------------------------+
+| Id: 11080     Name: NGC5139           Type: Globular Cluster                |
+| R.A.: 13:26:45.89      Dec.: -47:28:36.7      Constellation: Cen            |
+| Common names:                                                               |
+|    Omega Centauri                                                           |
++-----------------------------------------------------------------------------+
+| Major axis: 27.0'      Minor axis: N/A        Position angle: N/A           |
+| B-mag: 6.12    V-mag: 5.33    J-mag: N/A     H-mag: N/A     K-mag: N/A      |
+|                                                                             |
+| Parallax: 0.1368mas    Radial velocity: 234km/s       Redshift: 0.000782    |
+|                                                                             |
+| Proper apparent motion in RA: -3.24mas/yr                                   |
+| Proper apparent motion in Dec: -6.73mas/yr                                  |
+|                                                                             |
++-----------------------------------------------------------------------------+
+| Other identifiers:                                                          |
+|    C 080, MWSC 2125                                                         |
++-----------------------------------------------------------------------------+
+

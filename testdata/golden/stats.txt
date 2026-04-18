@@ -1,0 +1,26 @@
+
+PyONGC version: 1.2.0
+Database version: 20260307
+Total number of objects in database: 14033
+Object types statistics:
+	Star                         -> 546
+	Double star                  -> 244
+	Association of stars         -> 64
+	Star cluster + Nebula        -> 67
+	Dark Nebula                  -> 2
+	Duplicated record            -> 652
+	Emission Nebula              -> 8
+	Galaxy                       -> 10521
+	Globular Cluster             -> 208
+	Group of galaxies            -> 13
+	Galaxy Pair                  -> 231
+	Galaxy Triplet               -> 26
+	HII Ionized region           -> 83
+	Nebula                       -> 94
+	Nonexistent object           -> 10
+	Nova star                    -> 3
+	Open Cluster                 -> 663
+	Object of other/unknown type -> 419
+	Planetary Nebula             -> 130
+	Reflection Nebula            -> 38
+	Supernova remnant            -> 11

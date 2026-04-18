@@ -1,0 +1,7 @@
+
+Objects in proximity of 11:08:44 -00:09:01.3 from nearest to farthest:
+0.18° --> IC0673, Galaxy in Leo
+0.74° --> NGC3521, Galaxy in Leo
+0.98° --> IC0671, Galaxy in Leo
+(using a search radius of 60 arcmin)
+

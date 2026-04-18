@@ -1,0 +1,25 @@
++-----------------------------------------------------------------------------+
+| Id: 13095     Name: NGC7027           Type: Planetary Nebula                |
+| R.A.: 21:07:01.53      Dec.: +42:14:11.5      Constellation: Cyg            |
++-----------------------------------------------------------------------------+
+| Major axis: 0.23'      Minor axis: N/A        Position angle: N/A           |
+| B-mag: 10.4    V-mag: 8.5     J-mag: N/A     H-mag: N/A     K-mag: N/A      |
+|                                                                             |
+| Parallax: 9.6mas       Radial velocity: 9km/s         Redshift: 0.000030    |
+|                                                                             |
+| Proper apparent motion in RA: -22.7mas/yr                                   |
+| Proper apparent motion in Dec: -4.4mas/yr                                   |
+|                                                                             |
+| Central star identifiers:                                                   |
+|    BD +41 4004, HD 201272, SAO 50463                                        |
+|                                                                             |
+| Central star magnitudes:                                                    |
+|    U-mag: N/A              B-mag: N/A              V-mag: 16.25             |
++-----------------------------------------------------------------------------+
+| Other identifiers:                                                          |
+|    2MASX J21070267+4214098, PN G084.9-03.4                                  |
++-----------------------------------------------------------------------------+
+| NED notes:                                                                  |
+|    The 2MASX position refers to a star just east of the nebula.             |
++-----------------------------------------------------------------------------+
+

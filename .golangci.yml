@@ -24,6 +24,8 @@ linters:
           disabled: true
         - name: package-comments
           disabled: true
+    exhaustive:
+      default-signifies-exhaustive: true
     goconst:
       min-occurrences: 4
     nestif:

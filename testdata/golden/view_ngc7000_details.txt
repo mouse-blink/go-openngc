@@ -1,0 +1,19 @@
++-----------------------------------------------------------------------------+
+| Id: 13068     Name: NGC7000           Type: HII Ionized region              |
+| R.A.: 20:59:17.14      Dec.: +44:31:43.6      Constellation: Cyg            |
+| Common names:                                                               |
+|    North America Nebula                                                     |
++-----------------------------------------------------------------------------+
+| Major axis: 120.0'     Minor axis: 30.0'      Position angle: N/A           |
+| B-mag: 4.0     V-mag: N/A     J-mag: N/A     H-mag: N/A     K-mag: N/A      |
+|                                                                             |
+| Parallax: N/A          Radial velocity: N/A           Redshift: N/A         |
+|                                                                             |
+| Proper apparent motion in RA: N/A                                           |
+| Proper apparent motion in Dec: N/A                                          |
+|                                                                             |
++-----------------------------------------------------------------------------+
+| Other identifiers:                                                          |
+|    C 020, LBN 373                                                           |
++-----------------------------------------------------------------------------+
+

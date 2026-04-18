@@ -1,0 +1,21 @@
+{
+  "pyongc_version": "1.2.0",
+  "database_version": "20260307",
+  "total_objects": 14033,
+  "separations": [
+    {
+      "obj1": "NGC0869",
+      "obj2": "NGC0884",
+      "separation_deg": 0.4836324234594411,
+      "delta_ra_deg": 0.8897499999999994,
+      "delta_dec_deg": 0.026861111111110007
+    },
+    {
+      "obj1": "NGC0224",
+      "obj2": "NGC0221",
+      "separation_deg": 0.40385537248766895,
+      "delta_ra_deg": -0.010499999999999664,
+      "delta_dec_deg": -0.40377777777777696
+    }
+  ]
+}

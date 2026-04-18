@@ -1,0 +1,11 @@
+IC0443, Supernova remnant in Gem
+IC1340, Supernova remnant in Cyg
+NGC1918, Supernova remnant in Dor
+NGC1952, Supernova remnant in Tau
+NGC2060, Supernova remnant in Dor
+NGC6334, Supernova remnant in Sco
+NGC6960, Supernova remnant in Cyg
+NGC6974, Supernova remnant in Cyg
+NGC6979, Supernova remnant in Cyg
+NGC6992, Supernova remnant in Cyg
+NGC6995, Supernova remnant in Cyg

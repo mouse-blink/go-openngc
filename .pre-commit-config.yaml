@@ -3,7 +3,7 @@ repos:
     hooks:
       - id: golangci-lint
         name: golangci-lint
-        entry: bash -c 'command -v rtk >/dev/null 2>&1 && exec rtk golangci-lint run || exec golangci-lint run'
+        entry: bash -c 'command -v rtk >/dev/null 2>&1 && exec rtk proxy golangci-lint run || exec golangci-lint run'
         language: system
         pass_filenames: false
         types_or: [go]

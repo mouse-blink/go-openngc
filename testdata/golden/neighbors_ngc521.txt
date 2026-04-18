@@ -1,0 +1,6 @@
+
+NGC0521 neighbors from nearest to farthest:
+0.14° --> IC1694, Galaxy in Cet
+0.24° --> NGC0533, Galaxy in Cet
+(using a search radius of 15 arcmin)
+

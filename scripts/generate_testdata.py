@@ -8,11 +8,16 @@ Usage:
     python scripts/generate_testdata.py
 
 Outputs:
-    testdata/golden/*.txt    — byte-exact CLI output for golden file tests
-    testdata/objects.json    — per-object field values for property tests
+    testdata/golden/*.txt         -- byte-exact CLI output for golden file tests
+    testdata/golden/commands.json -- manifest of CLI commands for TestGolden
+    testdata/objects.json         -- per-object fixture data (flat array) for TestFixtureDriven
+    testdata/catalog_fields.json  -- full catalog dump for TestFullCatalogParity
+    testdata/errors.json          -- PyOngc error message fixtures for TestErrorMessageParity
+    testdata/fixtures_meta.json   -- separations and stats metadata
 """
 
 import json
+import math
 import os
 import subprocess
 import sys
@@ -46,32 +51,30 @@ TEST_OBJECTS = [
     "M57",        # Ring Nebula
     # Edge cases
     "NGC0001A",   # Component letter
-    # Duplicates and nonexistent
-    # (add more as needed)
 ]
 
-# CLI commands to capture as golden files
+# CLI commands to capture as golden files — positional args after flags
 CLI_COMMANDS = [
     # view without details
     (["ongc", "view", "NGC0001"], "view_ngc0001.txt"),
     (["ongc", "view", "NGC7000"], "view_ngc7000.txt"),
     (["ongc", "view", "M1"], "view_m1.txt"),
-    # view with details
-    (["ongc", "view", "NGC0001", "--details"], "view_ngc0001_details.txt"),
-    (["ongc", "view", "NGC7000", "--details"], "view_ngc7000_details.txt"),
-    (["ongc", "view", "M1", "--details"], "view_m1_details.txt"),
-    (["ongc", "view", "NGC7027", "--details"], "view_ngc7027_details.txt"),
-    (["ongc", "view", "NGC0224", "--details"], "view_ngc0224_details.txt"),
-    (["ongc", "view", "NGC6720", "--details"], "view_ngc6720_details.txt"),
-    (["ongc", "view", "NGC5139", "--details"], "view_ngc5139_details.txt"),
-    (["ongc", "view", "IC1396", "--details"], "view_ic1396_details.txt"),
+    # view with details (flags before positionals for Go stdlib flag)
+    (["ongc", "view", "--details", "NGC0001"], "view_ngc0001_details.txt"),
+    (["ongc", "view", "--details", "NGC7000"], "view_ngc7000_details.txt"),
+    (["ongc", "view", "--details", "M1"], "view_m1_details.txt"),
+    (["ongc", "view", "--details", "NGC7027"], "view_ngc7027_details.txt"),
+    (["ongc", "view", "--details", "NGC0224"], "view_ngc0224_details.txt"),
+    (["ongc", "view", "--details", "NGC6720"], "view_ngc6720_details.txt"),
+    (["ongc", "view", "--details", "NGC5139"], "view_ngc5139_details.txt"),
+    (["ongc", "view", "--details", "IC1396"], "view_ic1396_details.txt"),
     # nearby
     (["ongc", "nearby", "11:08:44", "-00:09:01.3"], "nearby_ic0673.txt"),
-    (["ongc", "nearby", "20:59:17.14", "+44:31:43.6", "--radius", "30"], "nearby_ngc7000.txt"),
-    # neighbors
-    (["ongc", "neighbors", "ngc521", "--radius", "15"], "neighbors_ngc521.txt"),
-    (["ongc", "neighbors", "NGC7000", "--radius", "30"], "neighbors_ngc7000.txt"),
-    (["ongc", "neighbors", "M31", "--radius", "60"], "neighbors_m31.txt"),
+    (["ongc", "nearby", "--radius", "30", "20:59:17.14", "+44:31:43.6"], "nearby_ngc7000.txt"),
+    # neighbors (flags before positionals)
+    (["ongc", "neighbors", "--radius", "15", "ngc521"], "neighbors_ngc521.txt"),
+    (["ongc", "neighbors", "--radius", "30", "NGC7000"], "neighbors_ngc7000.txt"),
+    (["ongc", "neighbors", "--radius", "60", "M31"], "neighbors_m31.txt"),
     # separation
     (["ongc", "separation", "ngc869", "ngc884"], "separation_double_cluster.txt"),
     (["ongc", "separation", "NGC0224", "NGC0221"], "separation_m31_m32.txt"),
@@ -84,9 +87,63 @@ CLI_COMMANDS = [
     (["ongc", "stats"], "stats.txt"),
 ]
 
+# Manifest for TestGolden — Go CLI requires flags before positional args
+COMMANDS_JSON = [
+    {"filename": "view_ngc0001.txt",          "args": ["view", "NGC0001"]},
+    {"filename": "view_ngc7000.txt",          "args": ["view", "NGC7000"]},
+    {"filename": "view_m1.txt",               "args": ["view", "M1"]},
+    {"filename": "view_ngc0001_details.txt",  "args": ["view", "--details", "NGC0001"]},
+    {"filename": "view_ngc7000_details.txt",  "args": ["view", "--details", "NGC7000"]},
+    {"filename": "view_m1_details.txt",       "args": ["view", "--details", "M1"]},
+    {"filename": "view_ngc7027_details.txt",  "args": ["view", "--details", "NGC7027"]},
+    {"filename": "view_ngc0224_details.txt",  "args": ["view", "--details", "NGC0224"]},
+    {"filename": "view_ngc6720_details.txt",  "args": ["view", "--details", "NGC6720"]},
+    {"filename": "view_ngc5139_details.txt",  "args": ["view", "--details", "NGC5139"]},
+    {"filename": "view_ic1396_details.txt",   "args": ["view", "--details", "IC1396"]},
+    {"filename": "nearby_ic0673.txt",         "args": ["nearby", "11:08:44", "-00:09:01.3"]},
+    {"filename": "nearby_ngc7000.txt",        "args": ["nearby", "--radius", "30", "20:59:17.14", "+44:31:43.6"]},
+    {"filename": "neighbors_ngc521.txt",      "args": ["neighbors", "--radius", "15", "ngc521"]},
+    {"filename": "neighbors_ngc7000.txt",     "args": ["neighbors", "--radius", "30", "NGC7000"]},
+    {"filename": "neighbors_m31.txt",         "args": ["neighbors", "--radius", "60", "M31"]},
+    {"filename": "separation_double_cluster.txt", "args": ["separation", "ngc869", "ngc884"]},
+    {"filename": "separation_m31_m32.txt",    "args": ["separation", "NGC0224", "NGC0221"]},
+    {"filename": "search_galaxy_boo_aql.txt", "args": ["search", "--catalog", "NGC", "--constellation", "Aql,Boo", "--type", "G", "--uptovmag", "10"]},
+    {"filename": "search_snr.txt",            "args": ["search", "--type", "SNR"]},
+    {"filename": "search_pn_cyg.txt",         "args": ["search", "--catalog", "NGC", "--type", "PN", "--constellation", "Cyg"]},
+    {"filename": "search_named_gcl.txt",      "args": ["search", "--withname", "--type", "GCl", "--catalog", "NGC"]},
+    {"filename": "stats.txt",                 "args": ["stats"]},
+]
+
+
+def obj_ra_rad(obj):
+    """Return RA in radians from PyOngc Dso, or 0.0 if not available."""
+    coords = obj.rad_coords
+    if coords is None:
+        return 0.0
+    return float(coords[0])
+
+
+def obj_dec_rad(obj):
+    """Return Dec in radians from PyOngc Dso, or 0.0 if not available."""
+    coords = obj.rad_coords
+    if coords is None:
+        return 0.0
+    return float(coords[1])
+
+
+def messier_str(obj):
+    """Return plain integer string for messier number, or empty string."""
+    messier = obj._messier
+    if messier:
+        try:
+            return str(int(messier))
+        except (ValueError, TypeError):
+            return str(messier) if messier else ""
+    return ""
+
 
 def generate_golden_files():
-    """Capture CLI output as golden files."""
+    """Capture PyOngc CLI output as golden files."""
     golden_dir = os.path.join("testdata", "golden")
     os.makedirs(golden_dir, exist_ok=True)
 
@@ -108,79 +165,117 @@ def generate_golden_files():
             sys.exit(1)
         except subprocess.TimeoutExpired:
             print(f"    ERROR: command timed out")
+            sys.exit(1)
+
+    # Write the commands manifest consumed by TestGolden
+    manifest_path = os.path.join(golden_dir, "commands.json")
+    with open(manifest_path, "w", newline="\n") as f:
+        json.dump(COMMANDS_JSON, f, indent=2)
+    print(f"  -> {manifest_path} ({len(COMMANDS_JSON)} entries)")
 
 
 def generate_object_fixtures():
-    """Export per-object field values as JSON."""
+    """Export per-object fixture data as a flat JSON array for TestFixtureDriven."""
     try:
-        import pyongc as ongc
+        from pyongc import ongc
     except ImportError:
         print("ERROR: pyongc not installed. Run: pip install pyongc")
         sys.exit(1)
 
-    objects = []
+    os.makedirs("testdata", exist_ok=True)
+
+    entries = []
     for name in TEST_OBJECTS:
-        obj = ongc.get(name)
+        try:
+            obj = ongc.get(name)
+        except Exception as e:
+            print(f"  WARNING: get({name}) raised {e}, skipping")
+            continue
         if obj is None:
             print(f"  WARNING: {name} not found, skipping")
             continue
 
         entry = {
-            "input_name": name,
             "name": obj.name,
             "type": obj.type,
-            "ra": list(obj.ra) if obj.ra is not None else None,
-            "dec": list(obj.dec) if obj.dec is not None else None,
-            "const": obj.const,
-            "majax": obj.majax,
-            "minax": obj.minax,
-            "pa": obj.pa,
-            "bmag": obj.bmag,
-            "vmag": obj.vmag,
-            "jmag": obj.jmag,
-            "hmag": obj.hmag,
-            "kmag": obj.kmag,
-            "sbrightn": obj.sbrightn,
-            "hubble": obj.hubble,
-            "parallax": obj.parallax,
-            "pmra": obj.pmra,
-            "pmdec": obj.pmdec,
-            "radvel": obj.radvel,
-            "redshift": obj.redshift,
-            "cstarumag": obj.cstarumag,
-            "cstarbmag": obj.cstarbmag,
-            "cstarvmag": obj.cstarvmag,
-            "messier": obj.messier,
-            "ngc": obj.ngc if hasattr(obj, "ngc") else "",
-            "ic": obj.ic if hasattr(obj, "ic") else "",
-            "str": str(obj),
+            "ra_rad": obj_ra_rad(obj),
+            "dec_rad": obj_dec_rad(obj),
+            "const": obj.constellation or "",
+            "messier": messier_str(obj),
         }
-
-        # Handle list/tuple fields carefully
-        for field in ["cstarnames", "identifiers", "commonnames"]:
-            val = getattr(obj, field, None)
-            if val is None:
-                entry[field] = None
-            elif isinstance(val, (list, tuple)):
-                entry[field] = list(val)
-            elif isinstance(val, str):
-                entry[field] = [v.strip() for v in val.split(",") if v.strip()] if val else []
-            else:
-                entry[field] = None
-
-        # Notes
-        entry["nednotes"] = getattr(obj, "nednotes", "") or ""
-        entry["ongnotes"] = getattr(obj, "ongnotes", "") or ""
-
-        # Replace NaN with None for JSON
-        for key, val in entry.items():
-            if isinstance(val, float) and (val != val):  # NaN check
-                entry[key] = None
-
-        objects.append(entry)
+        entries.append(entry)
         print(f"  {name} -> {obj.name} ({obj.type})")
 
-    # Also capture separation reference values
+    filepath = os.path.join("testdata", "objects.json")
+    with open(filepath, "w", newline="\n") as f:
+        json.dump(entries, f, indent=2, ensure_ascii=False)
+    print(f"  -> {filepath} ({len(entries)} objects)")
+
+
+def generate_catalog_fields():
+    """Full catalog dump for TestFullCatalogParity — one compact entry per object."""
+    try:
+        from pyongc import ongc
+    except ImportError:
+        print("ERROR: pyongc not installed")
+        sys.exit(1)
+
+    os.makedirs("testdata", exist_ok=True)
+
+    all_objects = ongc.listObjects()
+    entries = []
+    for obj in all_objects:
+        entries.append({
+            "name": obj.name,
+            "type": obj.type,
+            "ra_rad": obj_ra_rad(obj),
+            "dec_rad": obj_dec_rad(obj),
+            "const": obj.constellation or "",
+            "messier": messier_str(obj),
+        })
+
+    path = os.path.join("testdata", "catalog_fields.json")
+    with open(path, "w", newline="\n") as f:
+        json.dump(entries, f, indent=None, separators=(',', ':'))
+    print(f"  -> {path} ({len(entries)} objects)")
+
+
+def generate_errors():
+    """PyOngc error message fixtures for TestErrorMessageParity."""
+    try:
+        from pyongc import ongc
+    except ImportError:
+        print("ERROR: pyongc not installed")
+        sys.exit(1)
+
+    os.makedirs("testdata", exist_ok=True)
+
+    errors_list = []
+    for bad_name in ["NOTREAL", "NGC9999", "IC0000"]:
+        try:
+            ongc.get(bad_name)
+        except Exception as e:
+            errors_list.append({"op": "get", "input": bad_name, "error": str(e)})
+
+    if not errors_list:
+        print("  WARNING: no errors captured — check PyOngc behavior for bad names")
+
+    path = os.path.join("testdata", "errors.json")
+    with open(path, "w", newline="\n") as f:
+        json.dump(errors_list, f, indent=2)
+    print(f"  -> {path} ({len(errors_list)} entries)")
+
+
+def generate_fixtures_meta():
+    """Separation pairs and stats metadata, separate from objects.json."""
+    try:
+        from pyongc import ongc
+    except ImportError:
+        print("ERROR: pyongc not installed")
+        sys.exit(1)
+
+    os.makedirs("testdata", exist_ok=True)
+
     separations = []
     pairs = [("NGC0869", "NGC0884"), ("NGC0224", "NGC0221")]
     for name1, name2 in pairs:
@@ -188,36 +283,47 @@ def generate_object_fixtures():
         separations.append({
             "obj1": name1,
             "obj2": name2,
-            "separation_deg": sep[0],
-            "delta_ra_deg": sep[1],
-            "delta_dec_deg": sep[2],
+            "separation_deg": float(sep[0]),
+            "delta_ra_deg": float(sep[1]),
+            "delta_dec_deg": float(sep[2]),
         })
         print(f"  separation({name1}, {name2}) = {sep[0]:.6f}°")
 
-    # Capture stats
     stats = ongc.stats()
-
-    fixture = {
+    meta = {
         "pyongc_version": stats[0] if isinstance(stats, tuple) else str(stats),
-        "database_version": stats[1] if isinstance(stats, tuple) else "",
-        "total_objects": stats[2] if isinstance(stats, tuple) else 0,
-        "objects": objects,
+        "database_version": str(stats[1]) if isinstance(stats, tuple) and len(stats) > 1 else "",
+        "total_objects": stats[2] if isinstance(stats, tuple) and len(stats) > 2 else 0,
         "separations": separations,
     }
 
-    filepath = os.path.join("testdata", "objects.json")
-    with open(filepath, "w", newline="\n") as f:
-        json.dump(fixture, f, indent=2, ensure_ascii=False)
-    print(f"  -> {filepath} ({len(objects)} objects)")
+    path = os.path.join("testdata", "fixtures_meta.json")
+    with open(path, "w", newline="\n") as f:
+        json.dump(meta, f, indent=2, ensure_ascii=False)
+    print(f"  -> {path}")
 
 
 def main():
     print("Generating golden files...")
     generate_golden_files()
     print()
-    print("Generating object fixtures...")
+
+    print("Generating object fixtures (objects.json)...")
     generate_object_fixtures()
     print()
+
+    print("Generating full catalog fields (catalog_fields.json)...")
+    generate_catalog_fields()
+    print()
+
+    print("Generating error fixtures (errors.json)...")
+    generate_errors()
+    print()
+
+    print("Generating fixtures metadata (fixtures_meta.json)...")
+    generate_fixtures_meta()
+    print()
+
     print("Done! Test fixtures ready in testdata/")
 
 

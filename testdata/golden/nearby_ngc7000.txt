@@ -1,0 +1,6 @@
+
+Objects in proximity of 20:59:17.14 +44:31:43.6 from nearest to farthest:
+0.00° --> NGC7000, HII Ionized region in Cyg
+0.48° --> NGC6997, Star cluster + Nebula in Cyg
+(using a search radius of 30 arcmin)
+

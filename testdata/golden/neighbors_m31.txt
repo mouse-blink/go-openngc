@@ -1,0 +1,7 @@
+
+NGC0224 neighbors from nearest to farthest:
+0.40° --> NGC0221, Galaxy in And
+0.61° --> NGC0205, Galaxy in And
+0.68° --> NGC0206, Association of stars in And
+(using a search radius of 60 arcmin)
+

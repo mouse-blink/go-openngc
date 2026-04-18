@@ -1,0 +1,4 @@
+NGC0104, Globular Cluster in Tuc
+NGC1049, Globular Cluster in For
+NGC5139, Globular Cluster in Cen
+NGC6205, Globular Cluster in Her

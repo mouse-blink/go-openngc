@@ -1,0 +1,23 @@
++-----------------------------------------------------------------------------+
+| Id: 5830      Name: NGC0224           Type: Galaxy                          |
+| R.A.: 00:42:44.35      Dec.: +41:16:08.6      Constellation: And            |
+| Also known as:                                                              |
+|    M031                                                                     |
+| Common names:                                                               |
+|    Andromeda Galaxy                                                         |
++-----------------------------------------------------------------------------+
+| Major axis: 177.83'    Minor axis: 69.66'     Position angle: 35°           |
+| B-mag: 4.29    V-mag: 3.44    J-mag: 2.09    H-mag: 1.28    K-mag: 0.98     |
+|                                                                             |
+| Parallax: 6.0mas       Radial velocity: -300km/s      Redshift: -0.001000   |
+|                                                                             |
+| Proper apparent motion in RA: N/A                                           |
+| Proper apparent motion in Dec: N/A                                          |
+|                                                                             |
+| Surface brightness: 23.63     Hubble classification: Sb                     |
++-----------------------------------------------------------------------------+
+| Other identifiers:                                                          |
+|    2MASX J00424433+4116074, IRAS 00400+4059, MCG +07-02-016, PGC 002557,    |
+|    UGC 00454                                                                |
++-----------------------------------------------------------------------------+
+

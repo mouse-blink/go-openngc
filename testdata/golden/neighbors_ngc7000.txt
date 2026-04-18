@@ -1,0 +1,5 @@
+
+NGC7000 neighbors from nearest to farthest:
+0.48° --> NGC6997, Star cluster + Nebula in Cyg
+(using a search radius of 30 arcmin)
+
