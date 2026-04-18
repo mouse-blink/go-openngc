@@ -98,9 +98,15 @@ Build files in this order; after each: `rtk go build ./...` + `rtk go vet ./...`
 - **Error tests**: bad name → `ObjectNotFound`; bad coords → `InvalidCoordinates`
 - **Test-first for bugs**: write failing test, verify it fails, then fix
 - **Generate fixtures**: `pip install pyongc && python scripts/generate_testdata.py` (requires PyOngc installed)
+- **Catalog update gotcha**: updating `ongc/data/*.csv` to a newer OpenNGC version may cause `TestFullCatalogParity` failures for objects whose fields changed between versions — fix affected entries in `testdata/catalog_fields.json` individually
 
 ### Workflow
 
-- **Shell commands**: prefix all with `rtk`
+- **Shell commands**: prefix all with `rtk`. `rtk go <cmd>` works natively; non-go binaries need `rtk proxy <bin> <subcmd>` (e.g. `rtk proxy golangci-lint run`, `rtk proxy reuse lint`)
 - **Scope discipline**: only modify requested files; stop and ask on scope creep; pre-flight for 3+ files
 - **Commit style**: conventional format (`feat:`, `fix:`, `refactor:`), one logical change per commit
+
+## Gotchas
+
+- **REUSE compliance**: project uses `REUSE.toml` (converted from `.reuse/dep5`); when adding new unannotated files, add them to the relevant `[[annotations]]` path list in `REUSE.toml` — `REUSE.toml` itself must be listed in its own annotations
+- **CLI flag order**: Go stdlib `flag` stops parsing at first non-flag arg — for boolean flags that must work in any position, scan `args` manually rather than relying on `flag.Parse`

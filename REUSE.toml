@@ -20,3 +20,9 @@ path = ["testdata/**", "testdata/golden/**"]
 precedence = "aggregate"
 SPDX-FileCopyrightText = "2026 Adam Stevko"
 SPDX-License-Identifier = "MIT"
+
+[[annotations]]
+path = [".claude/**", "bin/**"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2026 Adam Stevko"
+SPDX-License-Identifier = "MIT"
