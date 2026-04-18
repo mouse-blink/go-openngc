@@ -1,0 +1,3 @@
+go-openngc is a Go port of PyOngc by Mattia Verga.
+PyOngc: https://github.com/mattiaverga/PyOngc (MIT License)
+OpenNGC catalog: https://github.com/mattiaverga/OpenNGC (CC-BY-SA-4.0)

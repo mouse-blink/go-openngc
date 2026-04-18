@@ -1,4 +1,6 @@
 #!/bin/bash
+# SPDX-FileCopyrightText: 2026 Adam Stevko
+# SPDX-License-Identifier: MIT
 # scripts/download_data.sh — downloads OpenNGC data at the latest upstream tag.
 set -euo pipefail
 

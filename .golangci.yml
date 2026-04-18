@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Adam Stevko
+# SPDX-License-Identifier: MIT
+
 version: "2"
 
 linters:
@@ -12,6 +15,7 @@ linters:
     - revive
     - exhaustive
     - goconst
+    - misspell
     # dead code
     - unparam
     # complexity

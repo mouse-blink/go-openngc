@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Adam Stevko
+# SPDX-License-Identifier: MIT
+
 repos:
   - repo: local
     hooks:
@@ -7,3 +10,22 @@ repos:
         language: system
         pass_filenames: false
         types_or: [go]
+
+      - id: govulncheck
+        name: govulncheck
+        entry: bash -c 'command -v rtk >/dev/null 2>&1 && exec rtk proxy govulncheck ./... || exec govulncheck ./...'
+        language: system
+        pass_filenames: false
+        types_or: [go]
+
+      - id: go-mod-verify
+        name: go mod verify
+        entry: bash -c 'command -v rtk >/dev/null 2>&1 && exec rtk go mod verify || exec go mod verify'
+        language: system
+        pass_filenames: false
+        types_or: [go]
+
+  - repo: https://github.com/fsfe/reuse-tool
+    rev: v4.0.3
+    hooks:
+      - id: reuse

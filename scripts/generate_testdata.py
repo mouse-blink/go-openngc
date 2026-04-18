@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Adam Stevko
+# SPDX-License-Identifier: MIT
 """Generate golden test files and object fixture data from PyOngc.
 
 Prerequisites:

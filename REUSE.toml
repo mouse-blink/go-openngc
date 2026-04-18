@@ -1,0 +1,22 @@
+version = 1
+SPDX-PackageName = "go-openngc"
+SPDX-PackageSupplier = "Adam Stevko"
+SPDX-PackageDownloadLocation = "https://github.com/xen0l/go-openngc"
+
+[[annotations]]
+path = [".gitignore", "README.md", "CLAUDE.md", "go.mod", "go.sum", "ongc/data/VERSION", "NOTICE", "REUSE.toml"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2026 Adam Stevko"
+SPDX-License-Identifier = "MIT"
+
+[[annotations]]
+path = ["ongc/data/NGC.csv", "ongc/data/addendum.csv"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2016-2023 Mattia Verga"
+SPDX-License-Identifier = "CC-BY-SA-4.0"
+
+[[annotations]]
+path = ["testdata/**", "testdata/golden/**"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2026 Adam Stevko"
+SPDX-License-Identifier = "MIT"
