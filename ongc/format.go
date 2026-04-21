@@ -12,6 +12,7 @@ import (
 	"unicode/utf8"
 )
 
+// na is the placeholder string for nil or NaN fields in formatted output.
 const na = "N/A"
 
 // String returns the short one-line representation: "NGC0001, Galaxy in Peg".

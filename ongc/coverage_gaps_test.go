@@ -119,7 +119,7 @@ func TestInRegionAntimeridianWithDecBand(t *testing.T) {
 // antipodal case, where simpler formulas (law of cosines) break.
 func TestAngularSepAntipodal(t *testing.T) {
 	cases := []struct {
-		name               string
+		name                 string
 		ra1, dec1, ra2, dec2 float64
 	}{
 		{"equator_to_equator", 0, 0, math.Pi, 0},

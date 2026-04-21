@@ -7,6 +7,8 @@ package ongc
 // ObjectType represents the classification code for a deep-sky object as used in OpenNGC CSV data.
 type ObjectType string
 
+// ObjectType constants enumerate the 21 OpenNGC classification codes.
+// Use TypeName to get the human-readable form and IsKnownType to validate.
 const (
 	TypeStar          ObjectType = "*"
 	TypeDoubleStar    ObjectType = "**"
@@ -114,6 +116,7 @@ func (t ObjectType) IsPlanetaryNebula() bool {
 // ObjectNotFound is returned when a named object is not present in the catalog.
 type ObjectNotFound struct{ Name string }
 
+// Error implements the error interface, returning a PyOngc-compatible message.
 func (e *ObjectNotFound) Error() string {
 	return "Object named " + e.Name + " not found in the database."
 }
@@ -121,11 +124,13 @@ func (e *ObjectNotFound) Error() string {
 // InvalidCoordinates is returned when coordinate values are out of range or malformed.
 type InvalidCoordinates struct{ Msg string }
 
+// Error implements the error interface.
 func (e *InvalidCoordinates) Error() string { return e.Msg }
 
 // UnknownIdentifier is returned when an object name cannot be parsed into a known catalog prefix.
 type UnknownIdentifier struct{ Msg string }
 
+// Error implements the error interface.
 func (e *UnknownIdentifier) Error() string { return e.Msg }
 
 // IAUConstellations is the set of all 88 IAU 3-letter constellation abbreviations.

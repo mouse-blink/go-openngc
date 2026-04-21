@@ -176,10 +176,10 @@ func TestNormalizeRARad(t *testing.T) {
 	}{
 		{0, 0},
 		{math.Pi, math.Pi},
-		{twoPi, 0},           // exactly 2π wraps to 0
+		{twoPi, 0}, // exactly 2π wraps to 0
 		{-math.Pi / 2, 3 * math.Pi / 2},
-		{3 * twoPi, 0},       // multiple wraps
-		{-3 * twoPi, 0},      // multiple negative wraps
+		{3 * twoPi, 0},  // multiple wraps
+		{-3 * twoPi, 0}, // multiple negative wraps
 		{-math.Pi / 6, twoPi - math.Pi/6},
 	}
 	for _, tc := range cases {

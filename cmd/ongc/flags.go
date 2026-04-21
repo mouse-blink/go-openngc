@@ -104,6 +104,7 @@ func splitFlagToken(tok string) (name, value string, hasValue bool) {
 	return rest, "", false
 }
 
+// isBoolFlag reports whether f is a boolean flag that does not consume a following argument.
 func isBoolFlag(f *flag.Flag) bool {
 	b, ok := f.Value.(boolFlag)
 	return ok && b.IsBoolFlag()

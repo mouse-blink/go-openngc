@@ -33,6 +33,7 @@ Subcommands:
   stats
 `
 
+// main dispatches to the appropriate subcommand handler based on os.Args[1].
 func main() {
 	if len(os.Args) < 2 {
 		fmt.Fprint(os.Stderr, usageText)
@@ -58,6 +59,7 @@ func main() {
 	}
 }
 
+// cmdView implements the view subcommand: display an object by name with optional details.
 func cmdView(args []string) {
 	fs := flag.NewFlagSet("view", flag.ExitOnError)
 	details := fs.Bool("details", false, "show detailed 79-column box output")
@@ -83,6 +85,7 @@ func cmdView(args []string) {
 	}
 }
 
+// cmdNearby implements the nearby subcommand: list objects near given coordinates.
 func cmdNearby(args []string) {
 	fs := flag.NewFlagSet("nearby", flag.ExitOnError)
 	radius := fs.Float64("radius", 60, "search radius in arcmin")
@@ -108,6 +111,7 @@ func cmdNearby(args []string) {
 	fmt.Printf("(using a search radius of %.0f arcmin)\n\n", *radius)
 }
 
+// cmdNeighbors implements the neighbors subcommand: list objects near a named reference.
 func cmdNeighbors(args []string) {
 	fs := flag.NewFlagSet("neighbors", flag.ExitOnError)
 	radius := fs.Float64("radius", 30, "search radius in arcmin")
@@ -154,6 +158,7 @@ func splitCSV(s string) []string {
 	return result
 }
 
+// cmdSearch implements the search subcommand: list objects matching the supplied filters.
 func cmdSearch(args []string) {
 	fs := flag.NewFlagSet("search", flag.ExitOnError)
 	catalog := fs.String("catalog", "all", "NGC|IC|all")
@@ -227,6 +232,7 @@ func cmdSearch(args []string) {
 	}
 }
 
+// cmdSeparation implements the separation subcommand: compute angular distance between objects.
 func cmdSeparation(args []string) {
 	fs := flag.NewFlagSet("separation", flag.ExitOnError)
 	fs.Parse(reorderFlags(fs, args)) //nolint:errcheck // ExitOnError handles errors
@@ -254,6 +260,7 @@ func cmdSeparation(args []string) {
 	fmt.Printf("%d° %dm %.2fs\n", deg, arcmin, arcsec)
 }
 
+// cmdStats implements the stats subcommand: display database version and object counts by type.
 func cmdStats(args []string) {
 	// args intentionally ignored; no flags for this subcommand.
 	_ = args

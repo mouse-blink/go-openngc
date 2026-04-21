@@ -14,10 +14,14 @@ import (
 	"strings"
 )
 
+// Package-level catalog state. DatabaseVersion is the only exported variable.
+// objects, byName, and aliases are built once by init and are read-only thereafter.
 var (
-	objects         []*Object
-	byName          map[string]*Object
-	aliases         map[string]*Object
+	objects []*Object
+	byName  map[string]*Object
+	aliases map[string]*Object
+
+	// DatabaseVersion identifies the OpenNGC data version baked into the binary (e.g. "v20260307").
 	DatabaseVersion = generatedDatabaseVersion
 )
 
@@ -251,6 +255,9 @@ func expectPoolLen(name string, got, want int) {
 	}
 }
 
+// buildAliases registers aliases for obj in the global aliases map: Messier number,
+// common names, cross-catalog identifiers, and NGC/IC cross-references.
+// Called once per object from init; first writer wins (aliasInsert skips duplicates).
 func buildAliases(obj *Object) {
 	if obj.Messier != "" {
 		aliasInsert("M"+obj.Messier, obj)

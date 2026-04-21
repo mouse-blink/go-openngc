@@ -19,6 +19,46 @@ go get github.com/xen0l/go-openngc/ongc
 go install github.com/xen0l/go-openngc/cmd/ongc@latest
 ```
 
+## Usage
+
+### Library
+
+Query the catalog by NGC, IC, or Messier number; common names; or cross-catalog identifiers.
+Names are normalized automatically—`"NGC1"`, `"ngc1"`, and `"ngc 1"` all resolve to the same object.
+
+```go
+import "github.com/xen0l/go-openngc/ongc"
+
+obj, err := ongc.Get("NGC1")      // NGC, IC, common name, or any identifier
+obj, err := ongc.Messier(31)      // Andromeda Galaxy → NGC0224
+results  := ongc.Search("Crab")   // substring search across all names
+```
+
+Compose filters to find objects of interest:
+
+```go
+galaxies, err := ongc.GetList(
+    ongc.WithType("G"),
+    ongc.WithConstellation("Vir"),
+    ongc.WithUpToVMag(12),
+)
+```
+
+Spatial queries:
+
+```go
+// Angular separation between two objects (degrees)
+sep, err := ongc.GetSeparation("NGC0001", "NGC0002")
+
+// Find objects within 30 arcminutes of M31 (NGC catalog only)
+objs, dists, err := ongc.GetNeighbors("M31", 30, "NGC")
+
+// Same, from arbitrary sky coordinates
+objs, dists, err := ongc.GetNearby("00:42:44.33", "+41:16:09.4", 30, "NGC")
+```
+
+See the [full API reference on pkg.go.dev](https://pkg.go.dev/github.com/xen0l/go-openngc/ongc).
+
 ## Data
 
 The embedded database comes from the [OpenNGC](https://github.com/mattiaverga/OpenNGC) project by

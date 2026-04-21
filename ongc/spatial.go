@@ -106,6 +106,7 @@ func GetSeparation(name1, name2 string) (float64, error) {
 	return angularSep(obj1.RA, obj1.Dec, obj2.RA, obj2.Dec), nil
 }
 
+// neighbor pairs an Object with its angular distance in degrees from a reference point.
 type neighbor struct {
 	obj  *Object
 	dist float64

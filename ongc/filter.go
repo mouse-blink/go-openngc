@@ -15,6 +15,8 @@ type ListOption func(*listOptions)
 // listOption is an alias kept for internal readability.
 type listOption = ListOption
 
+// listOptions accumulates filter criteria for GetList.
+// Pointer fields distinguish "not set" (nil) from "set to zero".
 type listOptions struct {
 	catalog        string
 	types          []ObjectType
@@ -31,12 +33,14 @@ type listOptions struct {
 	withName       bool
 }
 
+// WithCatalog restricts GetList results to a single catalog: "NGC", "IC", or "all".
 func WithCatalog(c string) ListOption {
 	return func(o *listOptions) {
 		o.catalog = c
 	}
 }
 
+// WithType restricts GetList results to objects matching any of the given type codes.
 func WithType(codes ...string) ListOption {
 	return func(o *listOptions) {
 		for _, c := range codes {
@@ -45,30 +49,35 @@ func WithType(codes ...string) ListOption {
 	}
 }
 
+// WithConstellation restricts GetList results to objects in any of the given IAU constellation codes.
 func WithConstellation(codes ...string) ListOption {
 	return func(o *listOptions) {
 		o.constellations = append(o.constellations, codes...)
 	}
 }
 
+// WithMinSize restricts GetList to objects with at least the given major-axis size in arcmin.
 func WithMinSize(arcmin float64) ListOption {
 	return func(o *listOptions) {
 		o.minSize = &arcmin
 	}
 }
 
+// WithMaxSize restricts GetList to objects with at most the given major-axis size in arcmin.
 func WithMaxSize(arcmin float64) ListOption {
 	return func(o *listOptions) {
 		o.maxSize = &arcmin
 	}
 }
 
+// WithUpToBMag restricts GetList to objects at least as bright as the given B-band magnitude.
 func WithUpToBMag(mag float64) ListOption {
 	return func(o *listOptions) {
 		o.upToBMag = &mag
 	}
 }
 
+// WithUpToVMag restricts GetList to objects at least as bright as the given V-band magnitude.
 func WithUpToVMag(mag float64) ListOption {
 	return func(o *listOptions) {
 		o.upToVMag = &mag
@@ -106,6 +115,7 @@ func normalizeRARad(rad float64) float64 {
 	return rad
 }
 
+// WithMinDec sets the lower Dec bound in degrees.
 func WithMinDec(deg float64) ListOption {
 	rad := deg * math.Pi / 180
 	return func(o *listOptions) {
@@ -113,6 +123,7 @@ func WithMinDec(deg float64) ListOption {
 	}
 }
 
+// WithMaxDec sets the upper Dec bound in degrees.
 func WithMaxDec(deg float64) ListOption {
 	rad := deg * math.Pi / 180
 	return func(o *listOptions) {
@@ -120,12 +131,14 @@ func WithMaxDec(deg float64) ListOption {
 	}
 }
 
+// WithNamed restricts GetList to objects whose common names or identifiers contain the substring.
 func WithNamed(substr string) ListOption {
 	return func(o *listOptions) {
 		o.namedSubstr = substr
 	}
 }
 
+// WithName restricts GetList to objects with at least one recorded common name.
 func WithName() ListOption {
 	return func(o *listOptions) {
 		o.withName = true
@@ -239,6 +252,7 @@ func GetList(opts ...listOption) ([]*Object, error) {
 	return results, nil
 }
 
+// matchCatalog reports whether obj belongs to the selected catalog.
 func matchCatalog(obj *Object, catalog string) bool {
 	switch catalog {
 	case "NGC":
@@ -250,6 +264,8 @@ func matchCatalog(obj *Object, catalog string) bool {
 	}
 }
 
+// matchRARange reports whether ra (radians) falls within the optional [minRA, maxRA] bounds.
+// minRA > maxRA is interpreted as a wrap-around range across 0h.
 func matchRARange(ra float64, minRA, maxRA *float64) bool {
 	if minRA == nil && maxRA == nil {
 		return true
@@ -267,6 +283,7 @@ func matchRARange(ra float64, minRA, maxRA *float64) bool {
 	return ra >= *minRA || ra <= *maxRA
 }
 
+// matchNamed reports whether obj's common names or identifiers contain lowerSubstr.
 func matchNamed(obj *Object, lowerSubstr string) bool {
 	for _, n := range obj.CommonNames {
 		if strings.Contains(strings.ToLower(n), lowerSubstr) {

@@ -43,11 +43,11 @@ func bruteCone(raRad, decRad, radiusArcmin float64, catalog string, excludeID in
 func TestDecBandIndexMatchesBruteForce(t *testing.T) {
 	const toRad = math.Pi / 180
 	cases := []struct {
-		name     string
-		raDeg    float64
-		decDeg   float64
-		radius   float64 // arcmin
-		catalog  string
+		name    string
+		raDeg   float64
+		decDeg  float64
+		radius  float64 // arcmin
+		catalog string
 	}{
 		// Equator, mid-latitude, poles, and all band boundaries.
 		{"equator", 0, 0, 60, "all"},
@@ -61,7 +61,7 @@ func TestDecBandIndexMatchesBruteForce(t *testing.T) {
 		{"over_south_pole", 200, -89.5, 90, "all"},
 		{"band_boundary_pos", 120, 10, 45, "all"}, // exactly at Dec=+10°
 		{"band_boundary_neg", 300, -10, 45, "all"},
-		{"small_radius", 0, 27.7, 5, "all"}, // NGC0001 at ~27.7°, tight cone
+		{"small_radius", 0, 27.7, 5, "all"},  // NGC0001 at ~27.7°, tight cone
 		{"large_radius", 180, 0, 600, "all"}, // spans ±10° (two bands)
 	}
 	for _, tc := range cases {
@@ -137,12 +137,12 @@ func TestDecBandIndexFunction(t *testing.T) {
 		decDeg   float64
 		wantBand int
 	}{
-		{-90, 0},    // south pole
+		{-90, 0}, // south pole
 		{-89.999, 0},
-		{-80, 1},    // exactly at -80 starts band 1
-		{-0.1, 8},   // just below zero
-		{0, 9},      // equator
-		{10, 10},    // band boundary
+		{-80, 1},  // exactly at -80 starts band 1
+		{-0.1, 8}, // just below zero
+		{0, 9},    // equator
+		{10, 10},  // band boundary
 		{89.999, 17},
 		{90, 17}, // north pole clamps to last band
 		{95, 17}, // out of range clamps

@@ -36,6 +36,7 @@ const (
 // normalizeRe mirrors ongc.NormalizeName — kept in sync with that regex.
 var normalizeRe = regexp.MustCompile(`^(NGC|IC)\s?([0-9]{1,4})\s?(NED[0-9]{1,2}|[A-Z]{1,2})?$`)
 
+// normalizeName canonicalizes a catalog name. Kept in sync with ongc.NormalizeName.
 func normalizeName(name string) string {
 	name = strings.TrimSpace(name)
 	name = strings.ToUpper(name)
@@ -91,6 +92,7 @@ type row struct {
 	Sources     string
 }
 
+// parseRARad parses a sexagesimal RA string ("HH:MM:SS.ss") into radians, returning NaN on error.
 func parseRARad(s string) float64 {
 	if s == "" {
 		return math.NaN()
@@ -114,6 +116,7 @@ func parseRARad(s string) float64 {
 	return (float64(h) + float64(m)/60 + sec/3600) * math.Pi / 12
 }
 
+// parseDecRad parses a signed sexagesimal Dec string ("±DD:MM:SS.s") into radians, returning NaN on error.
 func parseDecRad(s string) float64 {
 	if len(s) < 2 {
 		return math.NaN()
@@ -152,6 +155,7 @@ func parseDecRad(s string) float64 {
 	return sign * totalDeg * math.Pi / 180
 }
 
+// parseFloat64Ptr returns a pointer to the parsed float, or nil if the input is empty or malformed.
 func parseFloat64Ptr(s string) *float64 {
 	if s == "" {
 		return nil
@@ -163,6 +167,7 @@ func parseFloat64Ptr(s string) *float64 {
 	return &v
 }
 
+// splitTrim splits s on sep, trims whitespace, and drops empty parts.
 func splitTrim(s, sep string) []string {
 	parts := strings.Split(s, sep)
 	out := make([]string, 0, len(parts))
@@ -175,6 +180,7 @@ func splitTrim(s, sep string) []string {
 	return out
 }
 
+// parseRow converts a CSV record into a row, assigning the sequential catalog ID.
 func parseRow(rec []string, id int) row {
 	r := row{
 		ID:          id,
@@ -218,6 +224,7 @@ func parseRow(rec []string, id int) row {
 	return r
 }
 
+// readCSV reads a semicolon-delimited CSV, skipping the header row.
 func readCSV(path string) ([][]string, error) {
 	f, err := os.Open(path) //nolint:gosec // path is a constant data file, not user input
 	if err != nil {
@@ -248,6 +255,7 @@ func readCSV(path string) ([][]string, error) {
 	return rows, nil
 }
 
+// main parses the OpenNGC CSVs and VERSION file, then generates ongc/catalog_generated.go.
 func main() {
 	// `go generate` runs from the directory containing the //go:generate
 	// directive, which is ongc/. Climb to the module root (the directory
@@ -296,14 +304,13 @@ func main() {
 	fmt.Fprintf(os.Stderr, "generated %s (%d objects, version %s)\n", outputPath, len(all), version)
 }
 
+// die prints an error to stderr and exits with status 1.
 func die(err error) {
 	fmt.Fprintln(os.Stderr, err)
 	os.Exit(1)
 }
 
-// chdirToModuleRoot walks up from the current working directory until it
-// finds a directory containing go.mod, then chdirs there. Needed because
-// `go generate` runs us from the package directory, not the module root.
+// chdirToModuleRoot finds the module root by walking up from the current directory.
 func chdirToModuleRoot() error {
 	wd, err := os.Getwd()
 	if err != nil {
@@ -329,6 +336,7 @@ var pointerFields = []string{
 	"CstarUMag", "CstarBMag", "CstarVMag",
 }
 
+// writeHeader emits SPDX headers, package clause, and the DatabaseVersion constant.
 func writeHeader(w *bytes.Buffer, version string, count int) {
 	// Emit the SPDX tags split so the reuse linter doesn't parse this file
 	// (internal/gen/main.go) as claiming its own license via the generator's
@@ -355,6 +363,7 @@ func writeHeader(w *bytes.Buffer, version string, count int) {
 	fmt.Fprintln(w)
 }
 
+// writeObjects emits float64 pools for pointer fields and the generatedObjects slice.
 func writeObjects(w *bytes.Buffer, rows []row) {
 	// Emit one float pool per pointer field.
 	for _, field := range pointerFields {
@@ -380,8 +389,7 @@ func writeObjects(w *bytes.Buffer, rows []row) {
 	fmt.Fprintln(w, "}")
 }
 
-// pointerFieldValue dispatches the field name to the row struct's field.
-// Keeps all pool emission in one place — no reflection, explicit switch.
+// pointerFieldValue returns the pointer field value from a row by name.
 func pointerFieldValue(r row, name string) *float64 {
 	switch name {
 	case "MajAx":
@@ -422,8 +430,7 @@ func pointerFieldValue(r row, name string) *float64 {
 	panic("unknown pointer field: " + name)
 }
 
-// writeRow emits a Go struct literal for one object with value fields only.
-// Pointer fields are wired separately via pool arrays at init time.
+// writeRow emits a Go struct literal for one object, excluding pointer fields.
 func writeRow(w *bytes.Buffer, r row) {
 	fmt.Fprintf(w, "\t{ID: %d, Name: %q, Type: %q", r.ID, r.Name, r.Type)
 	writeFloat(w, "RA", r.RA)
@@ -442,6 +449,7 @@ func writeRow(w *bytes.Buffer, r row) {
 	fmt.Fprintln(w, "},")
 }
 
+// writeFloat emits a float field fragment, omitting zero values.
 func writeFloat(w *bytes.Buffer, name string, v float64) {
 	if math.IsNaN(v) {
 		fmt.Fprintf(w, ", %s: math.NaN()", name)
@@ -453,6 +461,7 @@ func writeFloat(w *bytes.Buffer, name string, v float64) {
 	fmt.Fprintf(w, ", %s: %s", name, floatLit(v))
 }
 
+// writeStr emits a string field fragment, omitting empty values.
 func writeStr(w *bytes.Buffer, name, v string) {
 	if v == "" {
 		return
@@ -460,6 +469,7 @@ func writeStr(w *bytes.Buffer, name, v string) {
 	fmt.Fprintf(w, ", %s: %q", name, v)
 }
 
+// writeStringSlice emits a string slice field fragment, omitting empty slices.
 func writeStringSlice(w *bytes.Buffer, name string, v []string) {
 	if len(v) == 0 {
 		return
@@ -474,6 +484,7 @@ func writeStringSlice(w *bytes.Buffer, name string, v []string) {
 	fmt.Fprint(w, "}")
 }
 
+// floatLit formats v as a valid Go float literal.
 func floatLit(v float64) string {
 	if math.IsNaN(v) {
 		return "math.NaN()"
