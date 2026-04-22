@@ -89,7 +89,7 @@ func detailMag(v *float64) string {
 	return pyFloat(*v)
 }
 
-// PrintDetails returns a 79-character-wide box matching PyOngc v1.2.1 printDetails output.
+// PrintDetails returns a 79-character-wide box matching PyOngc v1.2.0 printDetails output.
 func (o *Object) PrintDetails() string {
 	var sb strings.Builder
 	sep := "+" + strings.Repeat("-", 77) + "+\n"

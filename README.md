@@ -7,7 +7,7 @@
 Go port of [PyOngc](https://github.com/mattiaverga/PyOngc) — a library and CLI for querying the
 [OpenNGC](https://github.com/mattiaverga/OpenNGC) deep-sky object catalog. Provides offline lookup,
 search, filtering, and spatial queries for ~14K NGC/IC/Messier objects with zero external dependencies.
-CLI output is byte-compatible with PyOngc v1.2.1.
+CLI output is byte-compatible with PyOngc v1.2.0 against OpenNGC v20260307.
 
 ## Installation
 
@@ -65,6 +65,17 @@ The embedded database comes from the [OpenNGC](https://github.com/mattiaverga/Op
 Mattia Verga, released under [CC-BY-SA-4.0](https://creativecommons.org/licenses/by-sa/4.0/).
 It contains ~13,969 NGC objects and ~64 addendum entries with coordinates, magnitudes, sizes,
 Hubble classifications, radial velocities, and cross-identifications (Messier, PGC, UGC, MCG, etc.).
+
+## Design & Philosophy
+
+go-openngc is a native-Go port, not a fork or competitor — data corrections belong
+[upstream](https://github.com/mattiaverga/OpenNGC); Go-side bugs belong here. The project was
+translated from PyOngc with heavy use of AI coding agents, and quality is defended with byte-exact
+CLI output-parity tests, property tests against PyOngc fixtures, race-detector runs, and a linter
+stack that includes govulncheck and REUSE license compliance.
+
+See [docs/DESIGN.md](docs/DESIGN.md) for the full design criteria, stability promises, and
+quality-gates enumeration.
 
 ## Contributing
 

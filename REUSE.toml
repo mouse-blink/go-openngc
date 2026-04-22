@@ -4,7 +4,7 @@ SPDX-PackageSupplier = "Adam Stevko"
 SPDX-PackageDownloadLocation = "https://github.com/xen0l/go-openngc"
 
 [[annotations]]
-path = [".gitignore", "README.md", "CLAUDE.md", "go.mod", "go.sum", "ongc/data/VERSION", "NOTICE", "REUSE.toml"]
+path = [".gitignore", "README.md", "CLAUDE.md", "go.mod", "go.sum", "ongc/data/VERSION", "NOTICE", "REUSE.toml", "docs/**"]
 precedence = "aggregate"
 SPDX-FileCopyrightText = "2026 Adam Stevko"
 SPDX-License-Identifier = "MIT"
